@@ -1,0 +1,47 @@
+[project]
+name = "install-locked-env"
+version = "0.1.0"
+description = "Helper to install (web) locked environments"
+authors = [
+    {name = "pierre.augier", email = "pierre.augier@univ-grenoble-alpes.fr"},
+]
+dependencies = [
+    "typer[all]>=0.9.0",
+    "httpx>=0.27.0",
+    "rich>=13.0.0",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE.txt"]
+
+[project.scripts]
+install-locked-env = "install_locked_env:cli"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+package-dir = "src"
+
+[tool.pdm.dev-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = ["ruff", "ipython", "ipdb"]
+
+[tool.pdm.options]
+lock = ["-G", ":all"]
+
+[tool.pdm.scripts]
+format = "ruff format src test"
+
+
+[tool.pytest]
+addopts = ["--pdbcls=IPython.terminal.debugger:TerminalPdb"]
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
