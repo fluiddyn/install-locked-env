@@ -1,22 +1,23 @@
 # install-locked-env
 
-Helper to install (web) locked environments.
+Helper to install "locked environments" stored in repositories on the web.
 
 ## Installation
 
 ### Development Setup
 
-```bash
+```sh
 hg clone ssh://hg@foss.heptapod.net/fluiddyn/install-locked-env
 cd install-locked-env
 pdm sync
+. .venv/bin/activate
 ```
 
 ### Installing as a tool
 
 Once published to PyPI, you can use it with `uvx`:
 
-```bash
+```sh
 uvx install-locked-env <url>
 ```
 
@@ -26,13 +27,19 @@ uvx install-locked-env <url>
 
 Install a locked environment from a web source:
 
-```bash
+```sh
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi
 ```
 
+Different lockfile formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced and
+used by different tools (UV, PDM, Pixi, ...) will be supported. Currently, only Pixi is
+supported.
+
+GitHub, GitLab and Heptapod are supported.
+
 ### Options
 
-```bash
+```sh
 install-locked-env [OPTIONS] URL
 
 Options:
@@ -46,33 +53,46 @@ Options:
 ### Examples
 
 **Install from GitHub:**
-```bash
-install-locked-env https://github.com/fluiddyn/fluidsim/tree/main/pixi-envs/env-fluidsim
+
+Lockfile located in the root directory of a repository:
+
+```sh
+install-locked-env https://github.com/fluiddyn/fluidsim
+```
+
+or in another directory:
+
+```sh
+install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
 **Install from Heptapod:**
-```bash
+
+```sh
 install-locked-env https://foss.heptapod.net/fluiddyn/fluidsim/-/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
 **Install from GitLab:**
-```bash
+
+```sh
 install-locked-env https://gitlab.com/user/project/-/tree/main/envs/dev
 ```
 
 **Download only (no installation):**
-```bash
+
+```sh
 install-locked-env --no-install --output ./my-env https://github.com/user/repo/tree/main/envs/prod
 ```
 
 **Skip Jupyter kernel registration:**
-```bash
+
+```sh
 install-locked-env --no-register-kernel https://github.com/user/repo/tree/main/envs/test
 ```
 
 ## Running Tests
 
-```bash
+```sh
 # Run all tests
 pytest
 
@@ -86,20 +106,16 @@ pytest tests/test_parsers.py
 pytest tests/test_parsers.py::test_parse_github_url
 ```
 
-## Supported Platforms
-
-- ✅ GitHub
-- ✅ GitLab
-- ✅ Heptapod
-
 ## Supported Environment Types
 
 ### Current (v0.1.0)
+
 - ✅ Pixi (pixi.toml, pixi.lock)
 
 ### Planned
-- ⏳ uv (pyproject.toml, uv.lock)
-- ⏳ PDM (pyproject.toml, pdm.lock)
+
+- ⏳ uv (pyproject.toml, uv.lock/pylock.toml)
+- ⏳ PDM (pyproject.toml, pdm.lock/pylock.toml)
 - ⏳ Poetry (pyproject.toml, poetry.lock)
 
 ## How It Works
@@ -108,17 +124,20 @@ pytest tests/test_parsers.py::test_parse_github_url
 2. **File Detection**: Attempts to download supported lock files
 3. **Environment Type Detection**: Determines the type based on downloaded files
 4. **Installation**: Creates output directory and runs the appropriate installer
-5. **Jupyter Registration**: If ipykernel is present, registers the environment as a Jupyter kernel
+5. **Jupyter Registration**: If ipykernel is present, registers the environment as a
+   Jupyter kernel
 
 ## Requirements
 
 - Python 3.11+
-- pixi (for pixi environments)
+- Pixi (for Pixi environments)
+- UV (for uv.lock and pylock.toml)
+- PDM (for pdm.lock)
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Merge Request.
 
 ## License
 
-[Your License Here]
+BSD-3-Clause
