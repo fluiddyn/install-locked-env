@@ -31,11 +31,14 @@ Install a locked environment from a web source:
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi
 ```
 
-Different lockfile formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced and
+Different lock file formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced and
 used by different tools (UV, PDM, Pixi, ...) will be supported. Currently, only Pixi is
 supported.
 
 GitHub, GitLab and Heptapod are supported.
+
+> \[!CAUTION\] Use only with trusted repositories and lock files! `install-locked-env`
+> potentially executes code in the installed environment.
 
 ### Options
 
@@ -57,14 +60,22 @@ Options:
 Lockfile located in the root directory of a repository:
 
 ```sh
+# not yet implemented
 install-locked-env https://github.com/fluiddyn/fluidsim
+# implemented, but
+#   - uses pixi.lock and not pylock.toml and
+#   - wrong env name
+install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default
 ```
 
-or in another directory:
+or in another directory (this is what currently works):
 
 ```sh
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
+
+It should be possible (not yet implemented) to give a lock file address (something like
+<https://github.com/fluiddyn/fluidsim/tree/branch/default/pylock.toml>).
 
 **Install from Heptapod:**
 
@@ -118,13 +129,13 @@ pytest tests/test_parsers.py::test_parse_github_url
 - ⏳ PDM (pyproject.toml, pdm.lock/pylock.toml)
 - ⏳ Poetry (pyproject.toml, poetry.lock)
 
-## How It Works
+## How it works
 
-1. **URL Parsing**: Extracts repository information (platform, owner, repo, ref, path)
-2. **File Detection**: Attempts to download supported lock files
-3. **Environment Type Detection**: Determines the type based on downloaded files
+1. **URL parsing**: Extracts repository information (platform, owner, repo, ref, path)
+2. **File detection**: Attempts to download supported lock files
+3. **Environment type detection**: Determines the type based on downloaded files
 4. **Installation**: Creates output directory and runs the appropriate installer
-5. **Jupyter Registration**: If ipykernel is present, registers the environment as a
+5. **Jupyter registration**: If ipykernel is present, registers the environment as a
    Jupyter kernel
 
 ## Requirements
