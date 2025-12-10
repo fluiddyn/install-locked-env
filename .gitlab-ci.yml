@@ -5,7 +5,7 @@ stages:
   - release
 
 variables:
-  DOCKER_IMAGE_PATH: registry.heptapod.net:443/fluiddyn/install-locked-env.heptapod.net/ci/default
+  DOCKER_IMAGE_PATH: registry.heptapod.net:443/fluiddyn/install-locked-env/ci/default
 
 image: $DOCKER_IMAGE_PATH:stable
 
@@ -21,9 +21,9 @@ image:build:
     - container-registry-push
   needs: []
   # comment these rules for MR modifying the Docker file
-  # rules:
-  #   - if: $CI_PIPELINE_SOURCE == "schedule"
-  #   - if: $CI_BUILD_IMAGES == "1"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_BUILD_IMAGES == "1"
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [ "" ]
@@ -51,6 +51,9 @@ image:build:
 
 lint-with-ruff:
   stage: lint
+  needs:
+    - job: "image:build"
+      optional: true
   script:
     - pdm sync -G dev
     - pdm run ruff format --check
@@ -66,10 +69,13 @@ lint-with-ruff:
 
 test:
   stage: validate
+  needs:
+    - job: "image:build"
+      optional: true
   needs: []
   script:
     - pdm sync -G test
-    - pdm run pytest tests -v
+    - pdm run pytest test -v
     - uv cache prune --ci
   variables:
     UV_CACHE_DIR: .uv-cache
@@ -82,12 +88,13 @@ test:
 
 build:
   stage: validate
+  needs:
+    - job: "image:build"
+      optional: true
   needs: []
   script:
     - pdm build -v
-    - hg pull
-    - pdm build -v
-    - ls dist/mdformat_py_edu_fr*
+    - ls dist/install_locked_env*
   artifacts:
     when: always
     paths:
@@ -98,6 +105,7 @@ build:
 # manually set PDM_PUBLISH_PASSWORD in web interface to your pypi API token
 release:package:
   stage: release
+  needs: [ "build" ]
   rules:
     - if: '$CI_MERGE_REQUEST_ID'
       when: never
@@ -106,6 +114,5 @@ release:package:
   variables:
     PDM_PUBLISH_USERNAME: __token__
   script:
-    - ls dist/mdformat_py_edu_fr*
+    - ls dist/install_locked_env*
     - pdm publish --no-build
-  needs: [ "build" ]
