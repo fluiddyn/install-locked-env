@@ -1,8 +1,9 @@
 """CLI for install-locked-env."""
 
-import typer
 from pathlib import Path
 from typing import Optional
+
+import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -10,7 +11,10 @@ from .parsers import parse_url, UrlInfo
 from .downloaders import download_files
 from .installers import install_pixi_env, register_jupyter_kernel
 
-app = typer.Typer(help="Install locked environments from web sources")
+app = typer.Typer(
+    help="Install locked environments from web sources",
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 console = Console()
 
 
