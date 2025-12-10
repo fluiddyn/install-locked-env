@@ -1,0 +1,111 @@
+stages:
+  - image
+  - lint
+  - validate
+  - release
+
+variables:
+  DOCKER_IMAGE_PATH: registry.heptapod.net:443/fluiddyn/install-locked-env.heptapod.net/ci/default
+
+image: $DOCKER_IMAGE_PATH:stable
+
+before_script:
+  - echo appuser | sudo -S chown -R appuser .hg
+
+
+# Build an image for the above tasks; this should be a scheduled job, as
+# it is quite unnecessary to run on every invocation.
+image:build:
+  stage: image
+  tags:
+    - container-registry-push
+  needs: []
+  # comment these rules for MR modifying the Docker file
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == "schedule"
+  #   - if: $CI_BUILD_IMAGES == "1"
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
+  before_script:
+    - ""
+  script:
+    - |
+      cat > /kaniko/.docker/config.json <<EOF
+      {
+        "auths": {
+          "$CI_REGISTRY": {
+            "username": "$CI_REGISTRY_USER",
+            "password": "$CI_REGISTRY_PASSWORD"
+          }
+        }
+      }
+      EOF
+    - >
+      /kaniko/executor --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/docker/Dockerfile
+      --single-snapshot
+      --cleanup
+      --destination $DOCKER_IMAGE_PATH:stable
+
+
+lint-with-ruff:
+  stage: lint
+  script:
+    - pdm sync -G dev
+    - pdm run ruff format --check
+    - uv cache prune --ci
+  variables:
+    UV_CACHE_DIR: .uv-cache
+  cache:
+    - key:
+        files:
+          - pdm.lock
+      paths:
+        - $UV_CACHE_DIR
+
+test:
+  stage: validate
+  needs: []
+  script:
+    - pdm sync -G test
+    - pdm run pytest tests -v
+    - uv cache prune --ci
+  variables:
+    UV_CACHE_DIR: .uv-cache
+  cache:
+    - key:
+        files:
+          - pdm.lock
+      paths:
+        - $UV_CACHE_DIR
+
+build:
+  stage: validate
+  needs: []
+  script:
+    - pdm build -v
+    - hg pull
+    - pdm build -v
+    - ls dist/mdformat_py_edu_fr*
+  artifacts:
+    when: always
+    paths:
+      - pdm.lock
+      - dist
+    expire_in: 24 hrs
+
+# manually set PDM_PUBLISH_PASSWORD in web interface to your pypi API token
+release:package:
+  stage: release
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: never
+    - if: '$CI_COMMIT_TAG'
+      when: on_success
+  variables:
+    PDM_PUBLISH_USERNAME: __token__
+  script:
+    - ls dist/mdformat_py_edu_fr*
+    - pdm publish --no-build
+  needs: [ "build" ]
