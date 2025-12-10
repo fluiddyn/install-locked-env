@@ -45,6 +45,24 @@ dependencies = [
 ]
 
 [[packages]]
+name = "typer"
+version = "0.20.0"
+requires-python = ">=3.8"
+sdist = {name = "typer-0.20.0.tar.gz", url = "https://files.pythonhosted.org/packages/8f/28/7c85c8032b91dbe79725b6f17d2fffc595dff06a35c7a30a37bef73a1ab4/typer-0.20.0.tar.gz", hashes = {sha256 = "1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37"}}
+wheels = [
+    {name = "typer-0.20.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/78/64/7713ffe4b5983314e9d436a90d5bd4f63b6054e2aca783a3cfc44cb95bbf/typer-0.20.0-py3-none-any.whl",hashes = {sha256 = "5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a"}},
+]
+marker = "\"default\" in dependency_groups"
+
+[packages.tool.pdm]
+dependencies = [
+    "click>=8.0.0",
+    "typing-extensions>=3.7.4.3",
+    "shellingham>=1.3.0",
+    "rich>=10.11.0",
+]
+
+[[packages]]
 name = "ipdb"
 version = "0.13.13"
 requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -183,24 +201,6 @@ marker = "\"default\" in dependency_groups"
 dependencies = [
     "certifi",
     "h11>=0.16",
-]
-
-[[packages]]
-name = "typer"
-version = "0.20.0"
-requires-python = ">=3.8"
-sdist = {name = "typer-0.20.0.tar.gz", url = "https://files.pythonhosted.org/packages/8f/28/7c85c8032b91dbe79725b6f17d2fffc595dff06a35c7a30a37bef73a1ab4/typer-0.20.0.tar.gz", hashes = {sha256 = "1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37"}}
-wheels = [
-    {name = "typer-0.20.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/78/64/7713ffe4b5983314e9d436a90d5bd4f63b6054e2aca783a3cfc44cb95bbf/typer-0.20.0-py3-none-any.whl",hashes = {sha256 = "5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a"}},
-]
-marker = "\"default\" in dependency_groups"
-
-[packages.tool.pdm]
-dependencies = [
-    "click>=8.0.0",
-    "typing-extensions>=3.7.4.3",
-    "shellingham>=1.3.0",
-    "rich>=10.11.0",
 ]
 
 [[packages]]
@@ -677,7 +677,7 @@ marker = "\"dev\" in dependency_groups"
 dependencies = []
 
 [tool.pdm]
-hashes = {sha256 = "25d72a815f84ec02e1695f4081c58c5c11b76cfe079acb6edc9e1fc540c1ca40"}
+hashes = {sha256 = "3f49efaae1ef68b900dc3324afbfe292cfe9f22da9bf13a363f91ef69c2d4115"}
 strategy = ["inherit_metadata", "static_urls"]
 
 [[tool.pdm.targets]]

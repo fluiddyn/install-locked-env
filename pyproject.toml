@@ -6,7 +6,7 @@ authors = [
     {name = "pierre.augier", email = "pierre.augier@univ-grenoble-alpes.fr"},
 ]
 dependencies = [
-    "typer[all]>=0.9.0",
+    "typer>=0.9.0",
     "httpx>=0.27.0",
     "rich>=13.0.0",
 ]
