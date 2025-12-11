@@ -422,3 +422,26 @@ class PdmEnvironment(Environment):
             return "ipykernel" in result.stdout
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
+
+
+supported_tools = {
+    "pixi": PixiEnvironment,
+    "uv-pylock": UvPylockEnvironment,
+    "uv": UvEnvironment,
+    "pdm": PdmEnvironment,
+}
+
+
+def create_env(env_type: str, env_dir: Path) -> Environment:
+    """Install a pixi environment.
+
+    Args:
+        env_dir: Directory containing pixi.toml and pixi.lock
+
+    Returns:
+        Name of the installed environment
+    """
+    cls = supported_tools[env_type]
+    env = cls(env_dir)
+    env.install()
+    return env

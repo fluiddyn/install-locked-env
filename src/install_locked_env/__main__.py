@@ -11,7 +11,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from .parsers import parse_url
 from .downloaders import download_files_choose_tool
-from .installers import install_pixi_env, register_jupyter_kernel
+from .environments import create_env, supported_tools
 
 app = typer.Typer(
     help="Install locked environments from web sources",
@@ -99,12 +99,12 @@ def main(
             return
 
         # Install environment
-        if env_type == "pixi":
+        if env_type in supported_tools:
             task = progress.add_task("Installing pixi environment...", total=None)
             try:
-                env_name = install_pixi_env(output_dir)
+                env = create_env(env_type, output_dir)
                 console.print(
-                    f"[green]✓[/green] Installed pixi environment: {env_name}"
+                    f"[green]✓[/green] Installed pixi environment: {env.name}"
                 )
             except Exception as exc:
                 console.print(f"[red]✗[/red] Installation failed: {exc}")
@@ -114,7 +114,7 @@ def main(
             # Register Jupyter kernel if requested
             if register_kernel:
                 task = progress.add_task("Checking for ipykernel...", total=None)
-                if register_jupyter_kernel(output_dir, env_name):
+                if env.register_jupyter_kernel():
                     console.print("[green]✓[/green] Registered Jupyter kernel")
                 else:
                     console.print(
