@@ -9,8 +9,8 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from .parsers import parse_url, UrlInfo
-from .downloaders import download_files
+from .parsers import parse_url
+from .downloaders import download_files_choose_tool
 from .installers import install_pixi_env, register_jupyter_kernel
 
 app = typer.Typer(
@@ -60,7 +60,8 @@ def main(
             url_info = parse_url(url)
             console.print(f"[green]✓[/green] Detected {url_info.platform} repository")
             console.print(f"  Repository: {url_info.owner}/{url_info.repo}")
-            console.print(f"  Path: {url_info.path}")
+            if url_info.path:
+                console.print(f"  Path: {url_info.path}")
         except ValueError as exc:
             console.print(f"[red]✗[/red] {exc}")
             raise typer.Exit(1)
@@ -69,8 +70,7 @@ def main(
         # Download files
         task = progress.add_task("Downloading files...", total=None)
         try:
-            files = download_files(url_info)
-            env_type = detect_env_type(files)
+            env_type, files = download_files_choose_tool(url_info)
             console.print(f"[green]✓[/green] Downloaded {len(files)} file(s)")
             console.print(f"  Environment type: {env_type}")
         except Exception as exc:
@@ -126,20 +126,6 @@ def main(
             raise typer.Exit(1)
 
     console.print("\n[bold green]Installation complete![/bold green]")
-
-
-def detect_env_type(files: dict[str, str]) -> str:
-    """Detect the type of environment from downloaded files."""
-    if "pixi.toml" in files or "pixi.lock" in files:
-        return "pixi"
-    elif "uv.lock" in files:
-        return "uv"
-    elif "pdm.lock" in files:
-        return "pdm"
-    elif "poetry.lock" in files:
-        return "poetry"
-    else:
-        raise ValueError("Could not detect environment type from downloaded files")
 
 
 def cli():
