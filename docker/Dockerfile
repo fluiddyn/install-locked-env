@@ -23,6 +23,10 @@ RUN uv --version
 RUN uv tool install pdm
 RUN pdm --version
 
+RUN pdm py install 3.11
+RUN pdm py install 3.12
+RUN pdm py install 3.13
+
 RUN uv tool install mercurial --with hg-evolve,hg-git
 RUN uvx hg-setup init --auto --name py-edu-fr-devs --email py-edu-fr@no-mail.fr
 

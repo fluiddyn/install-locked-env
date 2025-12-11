@@ -3,6 +3,7 @@ syntax: glob
 .pdm-python
 .venv
 .pdm-build
+.python-version
 
 __pycache__
 .pytest_cache
