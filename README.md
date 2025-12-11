@@ -5,8 +5,8 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Heptapod CI](https://foss.heptapod.net/fluiddyn/install-locked-env/badges/branch/default/pipeline.svg)](https://foss.heptapod.net/fluiddyn/install-locked-env/-/pipelines)
 
-A minimalist CLI tool easing the installation of "locked environments" stored in
-repositories on the web.
+A minimalist CLI tool easing the local installation of "locked environments" described in
+lock files available in repositories on the web.
 
 ## Installation
 
@@ -27,11 +27,11 @@ Install a locked environment from a web source:
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
-Different lock file formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced and
-used by different tools (UV, PDM, Pixi, ...) will be supported. Currently, only Pixi is
-supported.
-
 GitHub, GitLab and Heptapod are supported.
+
+Currently, only Pixi environments are supported. We aim at supporting other lock file
+formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced by different tools (UV,
+PDM, Pixi, ...).
 
 > ⚠️ **Caution**
 >
