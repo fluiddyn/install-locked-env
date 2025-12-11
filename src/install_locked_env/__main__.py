@@ -67,6 +67,8 @@ def main(
         # Determine output directory
         if output_dir is None:
             env_name = url_info.path.rstrip("/").split("/")[-1]
+            if not env_name:
+                env_name = f"env-{url_info.repo}"
             output_dir = Path.cwd() / env_name
 
         output_dir.mkdir(parents=True, exist_ok=True)
