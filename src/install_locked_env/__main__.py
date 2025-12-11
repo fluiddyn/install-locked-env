@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+from typing_extensions import Annotated
+
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -16,6 +18,14 @@ app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 console = Console()
+
+
+def version_callback(value: bool):
+    if value:
+        from install_locked_env._version import __version__
+
+        print(__version__)
+        raise typer.Exit()
 
 
 @app.command()
@@ -32,6 +42,10 @@ def main(
         "--register-kernel/--no-register-kernel",
         help="Register Jupyter kernel if ipykernel is present",
     ),
+    version: Annotated[
+        Optional[bool],
+        typer.Option("--version", callback=version_callback, is_eager=True),
+    ] = None,
 ) -> None:
     """Install a locked environment from a web source."""
 
