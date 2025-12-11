@@ -33,7 +33,7 @@ def install_pixi_env(env_dir: Path) -> str:
     env_name = config.get("project", {}).get("name", env_dir.name)
 
     # Run pixi install
-    result = subprocess.run(
+    subprocess.run(
         ["pixi", "install"],
         cwd=env_dir,
         capture_output=True,

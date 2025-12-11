@@ -1,21 +1,17 @@
 # install-locked-env
 
-Helper to install "locked environments" stored in repositories on the web.
+[![Latest version](https://img.shields.io/pypi/v/install-locked-env.svg)](https://pypi.python.org/pypi/install-locked-env/)
+![Supported Python versions](https://img.shields.io/pypi/pyversions/install-locked-env.svg)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Heptapod CI](https://foss.heptapod.net/fluiddyn/install-locked-env/badges/branch/default/pipeline.svg)](https://foss.heptapod.net/fluiddyn/install-locked-env/-/pipelines)
+
+A minimalist CLI tool easing the installation of "locked environments" stored in
+repositories on the web.
 
 ## Installation
 
-### Development Setup
-
-```sh
-hg clone ssh://hg@foss.heptapod.net/fluiddyn/install-locked-env
-cd install-locked-env
-pdm sync
-. .venv/bin/activate
-```
-
-### Installing as a tool
-
-Once published to PyPI, you can use it with `uvx`:
+`install-locked-env` is a CLI tool available on PyPI so the simplest way to install and
+run it is by using [UV] and more precisely its command `uvx`:
 
 ```sh
 uvx install-locked-env <url>
@@ -28,7 +24,7 @@ uvx install-locked-env <url>
 Install a locked environment from a web source:
 
 ```sh
-install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi
+install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
 Different lock file formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced and
@@ -37,8 +33,10 @@ supported.
 
 GitHub, GitLab and Heptapod are supported.
 
-> \[!CAUTION\] Use only with trusted repositories and lock files! `install-locked-env`
-> potentially executes code in the installed environment.
+> ⚠️ **Caution**
+>
+> Use only with trusted repositories and lock files! `install-locked-env` potentially
+> executes code in the installed environment.
 
 ### Options
 
@@ -60,18 +58,20 @@ Options:
 Lockfile located in the root directory of a repository:
 
 ```sh
-# not yet implemented
+# warning: currently uses pixi.lock instead of pylock.toml
 install-locked-env https://github.com/fluiddyn/fluidsim
-# implemented, but
-#   - uses pixi.lock and not pylock.toml and
-#   - wrong env name
-install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default
 ```
 
-or in another directory (this is what currently works):
+or in another directory:
 
 ```sh
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
+```
+
+or, with a precise commit reference:
+
+```sh
+install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi
 ```
 
 It should be possible (not yet implemented) to give a lock file address (something like
@@ -92,29 +92,13 @@ install-locked-env https://gitlab.com/user/project/-/tree/main/envs/dev
 **Download only (no installation):**
 
 ```sh
-install-locked-env --no-install --output ./my-env https://github.com/user/repo/tree/main/envs/prod
+install-locked-env --no-install --output ./my-env https://github.com/user/repo
 ```
 
 **Skip Jupyter kernel registration:**
 
 ```sh
-install-locked-env --no-register-kernel https://github.com/user/repo/tree/main/envs/test
-```
-
-## Running Tests
-
-```sh
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=install_locked_env --cov-report=html
-
-# Run specific test file
-pytest tests/test_parsers.py
-
-# Run specific test
-pytest tests/test_parsers.py::test_parse_github_url
+install-locked-env --no-register-kernel https://github.com/user/repo
 ```
 
 ## Supported Environment Types
@@ -147,8 +131,10 @@ pytest tests/test_parsers.py::test_parse_github_url
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Merge Request.
+Contributions are welcome! See [our contributing guide](./CONTRIBUTING.md).
 
 ## License
 
 BSD-3-Clause
+
+[uv]: https://docs.astral.sh/uv/

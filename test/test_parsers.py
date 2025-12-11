@@ -1,6 +1,8 @@
 """Tests for URL parsing."""
 
 import pytest
+import responses
+
 from install_locked_env.parsers import parse_url, UrlInfo, _split_ref_and_path
 
 
@@ -39,6 +41,28 @@ def test_split_ref_and_path_empty():
     assert path == ""
 
 
+@responses.activate
+def test_parse_github_repo():
+    """Test parsing a GitHub repo URL."""
+    url = "https://github.com/fluiddyn/fluidsim"
+
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/fluiddyn/fluidsim",
+        json={"default_branch": "branch/default"},
+        status=200,
+    )
+
+    result = parse_url(url)
+
+    assert result.platform == "github"
+    assert result.owner == "fluiddyn"
+    assert result.repo == "fluidsim"
+    assert result.ref == "branch/default"
+    assert result.path == ""
+    assert "raw.githubusercontent.com" in result.raw_url_template
+
+
 def test_parse_github_url():
     """Test parsing a GitHub URL."""
     url = "https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi"
@@ -73,6 +97,28 @@ def test_parse_github_url_with_slashed_branch():
     assert result.platform == "github"
     assert result.ref == "branch/feature-name"
     assert result.path == "envs/dev"
+
+
+@responses.activate
+def test_parse_heptapod_repo():
+    """Test parsing a Heptapod repo URL."""
+    url = "https://foss.heptapod.net/fluiddyn/fluidsim"
+
+    responses.add(
+        responses.GET,
+        "https://foss.heptapod.net/api/v4/projects/fluiddyn%2Ffluidsim",
+        json={"default_branch": "branch/default"},
+        status=200,
+    )
+
+    result = parse_url(url)
+
+    assert result.platform == "heptapod"
+    assert result.owner == "fluiddyn"
+    assert result.repo == "fluidsim"
+    assert result.ref == "branch/default"
+    assert result.path == ""
+    assert "foss.heptapod.net" in result.raw_url_template
 
 
 def test_parse_heptapod_url():
@@ -127,7 +173,7 @@ def test_parse_gitlab_url_with_slashed_branch():
 def test_parse_invalid_github_url():
     """Test that invalid GitHub URLs raise ValueError."""
     with pytest.raises(ValueError, match="Invalid GitHub URL format"):
-        parse_url("https://github.com/user/repo")
+        parse_url("https://github.com/user/repo/wrong")
 
 
 def test_parse_invalid_gitlab_url():
