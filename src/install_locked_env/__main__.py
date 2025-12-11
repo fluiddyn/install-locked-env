@@ -100,11 +100,11 @@ def main(
 
         # Install environment
         if env_type in supported_tools:
-            task = progress.add_task("Installing pixi environment...", total=None)
+            task = progress.add_task("Installing environment...", total=None)
             try:
                 env = create_env(env_type, output_dir)
                 console.print(
-                    f"[green]✓[/green] Installed pixi environment: {env.name}"
+                    f"[green]✓[/green] Installed {env.tool} environment: {env.name}"
                 )
             except Exception as exc:
                 console.print(f"[red]✗[/red] Installation failed: {exc}")
