@@ -1,5 +1,10 @@
 # Release notes
 
+## 0.1.2 (2025-12-11)
+
+- Support repo URLs
+- `--version`
+
 ## 0.1.1 (2025-12-09)
 
 - Fix dependencies in pyproject.toml
