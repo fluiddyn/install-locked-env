@@ -27,11 +27,8 @@ Install a locked environment from a web source:
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
-GitHub, GitLab and Heptapod are supported.
-
-Currently, only Pixi environments are supported. We aim at supporting other lock file
-formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced by different tools (UV,
-PDM, Pixi, ...).
+Different lock file formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced by
+different tools (UV, PDM, Pixi, ...) are supported.
 
 > ⚠️ **Caution**
 >
@@ -53,16 +50,17 @@ Options:
 
 ### Examples
 
-**Install from GitHub:**
+**Install from a repository URL:**
 
 Lockfile located in the root directory of a repository:
 
 ```sh
-# warning: currently uses pixi.lock instead of pylock.toml
-install-locked-env https://github.com/fluiddyn/fluidsim
+install-locked-env https://foss.heptapod.net/py-edu-fr/py-edu-fr
 ```
 
-or in another directory:
+GitHub, GitLab and Heptapod are supported.
+
+**Install from a reference/directory URL:**
 
 ```sh
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
@@ -74,20 +72,20 @@ or, with a precise commit reference:
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi
 ```
 
-It should be possible (not yet implemented) to give a lock file address (something like
-<https://github.com/fluiddyn/fluidsim/tree/branch/default/pylock.toml>).
+For GitLab and Heptapod, the URLs have this format:
 
-**Install from Heptapod:**
+```sh
+install-locked-env https://gitlab.com/user/project/-/tree/main/envs/dev
+```
+
+For example:
 
 ```sh
 install-locked-env https://foss.heptapod.net/fluiddyn/fluidsim/-/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
-**Install from GitLab:**
-
-```sh
-install-locked-env https://gitlab.com/user/project/-/tree/main/envs/dev
-```
+It should be possible (not yet implemented) to give a lock file address (something like
+<https://github.com/fluiddyn/fluidsim/tree/branch/default/pylock.toml>).
 
 **Download only (no installation):**
 
@@ -103,14 +101,14 @@ install-locked-env --no-register-kernel https://github.com/user/repo
 
 ## Supported Environment Types
 
-### Current (v0.1.0)
+### Current (v0.2.0)
 
 - ✅ Pixi (pixi.toml, pixi.lock)
+- ✅ uv (pyproject.toml, uv.lock/pylock.toml)
+- ✅ PDM (pyproject.toml, pdm.lock/pylock.toml)
 
 ### Planned
 
-- ⏳ uv (pyproject.toml, uv.lock/pylock.toml)
-- ⏳ PDM (pyproject.toml, pdm.lock/pylock.toml)
 - ⏳ Poetry (pyproject.toml, poetry.lock)
 
 ## How it works
