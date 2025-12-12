@@ -10,12 +10,15 @@ lock files available in repositories on the web.
 
 ## Installation
 
-`install-locked-env` is a CLI tool available on PyPI so the simplest way to install and
-run it is by using [UV] and more precisely its command `uvx`:
+The simplest way to install and run `install-locked-env` is by using the [UV] command
+`uvx`:
 
 ```sh
 uvx install-locked-env <url>
 ```
+
+Of course, `install-locked-env` can also be installed with `uv tool`, `pipx` or even
+`pip`.
 
 ## Usage
 
@@ -75,7 +78,7 @@ install-locked-env https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819
 For GitLab and Heptapod, the URLs have this format:
 
 ```sh
-install-locked-env https://gitlab.com/user/project/-/tree/main/envs/dev
+install-locked-env https://gitlab.com/user/project/-/tree/branch-name/envs/dev
 ```
 
 For example:
