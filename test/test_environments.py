@@ -42,6 +42,19 @@ version = "0.1.0"
 """
 
 
+def assert_called_once_with(mock_run, cmd, cwd, capture_output=True):
+    mock_run.assert_called_once_with(
+        cmd,
+        cwd=cwd,
+        capture_output=capture_output,
+        check=True,
+        text=True,
+        env=ANY,
+        stdout=ANY,
+        stderr=ANY,
+    )
+
+
 # Base Environment Tests
 class TestEnvironment:
     """Tests for the base Environment class."""
@@ -172,13 +185,11 @@ class TestPixiEnvironment:
         env = PixiEnvironment(temp_env_dir, name="test-env")
         env.install()
 
-        mock_run.assert_called_once_with(
-            ["pixi", "install"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+        assert_called_once_with(
+            mock_run,
+            ["pixi", "install", "-v"],
+            temp_env_dir,
+            capture_output=False,
         )
 
     @patch("shutil.which")
@@ -191,13 +202,10 @@ class TestPixiEnvironment:
         env = PixiEnvironment(temp_env_dir, name="test-env")
         result = env.run_in_env(["python", "script.py"])
 
-        mock_run.assert_called_once_with(
+        assert_called_once_with(
+            mock_run,
             ["pixi", "run", "python", "script.py"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+            temp_env_dir,
         )
         assert result.stdout == "output"
 
@@ -338,13 +346,11 @@ class TestUvEnvironment:
         env = UvEnvironment(temp_env_dir, name="test-env")
         env.install()
 
-        mock_run.assert_called_once_with(
+        assert_called_once_with(
+            mock_run,
             ["uv", "sync"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+            temp_env_dir,
+            capture_output=False,
         )
 
     @patch("shutil.which")
@@ -357,13 +363,10 @@ class TestUvEnvironment:
         env = UvEnvironment(temp_env_dir, name="test-env")
         result = env.run_in_env(["pytest"])
 
-        mock_run.assert_called_once_with(
+        assert_called_once_with(
+            mock_run,
             ["uv", "run", "pytest"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+            temp_env_dir,
         )
         assert result.stdout == "test output"
 
@@ -403,13 +406,11 @@ class TestPdmEnvironment:
         env = PdmEnvironment(temp_env_dir, name="test-env")
         env.install()
 
-        mock_run.assert_called_once_with(
+        assert_called_once_with(
+            mock_run,
             ["pdm", "sync"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+            temp_env_dir,
+            capture_output=False,
         )
 
     @patch("shutil.which")
@@ -422,13 +423,10 @@ class TestPdmEnvironment:
         env = PdmEnvironment(temp_env_dir, name="test-env")
         result = env.run_in_env(["python", "-m", "pytest"])
 
-        mock_run.assert_called_once_with(
+        assert_called_once_with(
+            mock_run,
             ["pdm", "run", "python", "-m", "pytest"],
-            cwd=temp_env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-            env=ANY,
+            temp_env_dir,
         )
         assert result.stdout == "pdm output"
 

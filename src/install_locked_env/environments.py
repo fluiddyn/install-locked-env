@@ -29,6 +29,7 @@ class Environment(ABC):
         self._check_tool()
         self.env_dir = Path(env_dir)
         self._name = name
+        self.path_log_file = self.env_dir / "log_install.txt"
         if self._venv_dir:
             self.venv_path = self.env_dir / self._venv_dir
 
@@ -54,17 +55,23 @@ class Environment(ABC):
     def _detect_name(self) -> str:
         """Detect the environment name from configuration."""
 
-    def _run_in_dir(self, cmd, capture_output=True, check=True, **kwargs):
+    def _run_in_dir(
+        self, cmd, capture_output=True, check=True, log_file=None, **kwargs
+    ):
         """run a subprocess in env_dir"""
-
         if isinstance(cmd, str):
             cmd = shlex.split(cmd)
 
         env = {
             key: value
             for key, value in os.environ.copy().items()
-            if not key.startswith("VIRTUALENV")
+            if not key.startswith("VIRTUAL_ENV")
         }
+        assert "VIRTUAL_ENV" not in env
+
+        stdout = stderr = log_file
+        if log_file is not None:
+            capture_output = False
 
         return subprocess.run(
             cmd,
@@ -73,12 +80,15 @@ class Environment(ABC):
             text=True,
             check=check,
             env=env,
+            stdout=stdout,
+            stderr=stderr,
             **kwargs,
         )
 
     def install(self) -> None:
         """Install the environment."""
-        self._run_in_dir(self._install_cmd, capture_output=True)
+        with open(self.path_log_file, "w", encoding="utf-8") as file:
+            self._run_in_dir(self._install_cmd, log_file=file)
 
     def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
         """Run a command in the environment.
@@ -142,7 +152,7 @@ class PixiEnvironment(Environment):
 
     tool_name = "pixi"
     _tool_install_url = "https://pixi.sh"
-    _install_cmd = "pixi install"
+    _install_cmd = "pixi install -v"
     _list_packages_cmd = "pixi list"
 
     def _detect_name(self) -> str:
@@ -203,10 +213,10 @@ class UvPylockEnvironment(Environment):
         Raises:
             subprocess.CalledProcessError: If installation fails
         """
-        if not self.venv_path.exists():
-            self._run_in_dir("uv venv")
-
-        self._run_in_dir(["uv", "pip", "sync", "pylock.toml"])
+        with open(self.path_log_file, "w", encoding="utf-8") as file:
+            if not self.venv_path.exists():
+                self._run_in_dir("uv venv", log_file=file)
+            self._run_in_dir(["uv", "pip", "sync", "pylock.toml"], log_file=file)
 
 
 class PyProjectEnvironment(Environment):
@@ -261,10 +271,11 @@ supported_tools = {
     "uv-pylock": UvPylockEnvironment,
     "uv": UvEnvironment,
     "pdm": PdmEnvironment,
+    "pdm-uv": PdmEnvironment,
 }
 
 
-def create_env(env_type: str, env_dir: Path) -> Environment:
+def create_env_object(env_type: str, env_dir: Path) -> Environment:
     """Install a pixi environment.
 
     Args:
@@ -274,6 +285,4 @@ def create_env(env_type: str, env_dir: Path) -> Environment:
         Name of the installed environment
     """
     cls = supported_tools[env_type]
-    env = cls(env_dir)
-    env.install()
-    return env
+    return cls(env_dir)

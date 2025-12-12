@@ -11,7 +11,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from .parsers import parse_url
 from .downloaders import download_files_choose_tool
-from .environments import create_env, supported_tools
+from .environments import create_env_object, supported_tools
 
 app = typer.Typer(
     help="Install locked environments from web sources",
@@ -92,6 +92,7 @@ def main(
         for filename, content in files.items():
             (output_dir / filename).write_text(content)
         console.print(f"[green]✓[/green] Saved files to {output_dir}")
+        console.print("    " + ", ".join(files.keys()))
         progress.remove_task(task)
 
         if no_install:
@@ -100,12 +101,14 @@ def main(
 
         # Install environment
         if env_type in supported_tools:
-            task = progress.add_task("Installing environment...", total=None)
+            env = create_env_object(env_type, output_dir)
+            task = progress.add_task(
+                f"  Installing {env.tool_name} environment...", total=None
+            )
+            console.print(f"  log file installation: {env.path_log_file}")
             try:
-                env = create_env(env_type, output_dir)
-                console.print(
-                    f"[green]✓[/green] Installed {env.tool} environment: {env.name}"
-                )
+                env.install()
+                console.print(f"[green]✓[/green] Installed environment: {env.name}")
             except Exception as exc:
                 console.print(f"[red]✗[/red] Installation failed: {exc}")
                 raise typer.Exit(1)
