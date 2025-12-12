@@ -73,11 +73,8 @@ def test_download_only_pixi_toml(mock_url_info):
     with patch("httpx.Client") as mock_client:
         mock_client.return_value.__enter__.return_value.get = mock_get
 
-        tool, files = download_files_choose_tool(mock_url_info)
-
-        assert tool == "pixi"
-        assert "pixi.toml" in files
-        assert "pixi.lock" not in files
+        with pytest.raises(ValueError, match="No supported lock files found"):
+            tool, files = download_files_choose_tool(mock_url_info)
 
 
 def test_download_no_files_found(mock_url_info):
