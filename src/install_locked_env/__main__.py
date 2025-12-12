@@ -105,7 +105,9 @@ def main(
             task = progress.add_task(
                 f"  Installing {env.tool_name} environment...", total=None
             )
-            console.print(f"  log file installation: {env.path_log_file}")
+            console.print(
+                f"  log file installation: {env.get_relative_path_log_file()}"
+            )
             try:
                 env.install()
                 console.print(f"[green]✓[/green] Installed environment: {env.name}")
@@ -128,7 +130,8 @@ def main(
             console.print(f"[red]✗[/red] Unsupported environment type: {env_type}")
             raise typer.Exit(1)
 
-    console.print("\n[bold green]Installation complete![/bold green]")
+    console.print("[bold green]Installation complete![/bold green]")
+    console.print(env.get_activate_msg())
 
 
 def cli():

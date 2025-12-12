@@ -138,6 +138,24 @@ class Environment(ABC):
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
+    def get_relative_path(self) -> Path:
+        """Get dir path relative to cwd"""
+        try:
+            return self.env_dir.relative_to(Path.cwd())
+        except ValueError:
+            return self.env_dir
+
+    def get_activate_msg(self) -> str:
+        """Get a message explaining how to activate"""
+        return (
+            f"Activate with: [green]source "
+            f"{self.get_relative_path() / '.venv/bin/activate'}[/green]"
+        )
+
+    def get_relative_path_log_file(self) -> Path:
+        """Get the relative path of the log file"""
+        return self.get_relative_path() / self.path_log_file.name
+
 
 class PixiEnvironment(Environment):
     """Pixi environment management.
@@ -179,6 +197,12 @@ class PixiEnvironment(Environment):
                 if parts:
                     packages.append(parts[0])
         return packages
+
+    def get_activate_msg(self) -> str:
+        return (
+            f"Activate with: [green]pixi shell --manifest-path "
+            f"{self.get_relative_path()}[/green]"
+        )
 
 
 class UvPylockEnvironment(Environment):
