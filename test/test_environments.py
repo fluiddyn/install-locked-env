@@ -198,6 +198,7 @@ class TestPixiEnvironment:
             cwd=temp_env_dir,
             capture_output=True,
             text=True,
+            check=True,
         )
         assert result.stdout == "output"
 
@@ -361,6 +362,7 @@ class TestUvEnvironment:
             cwd=temp_env_dir,
             capture_output=True,
             text=True,
+            check=True,
         )
         assert result.stdout == "test output"
 
@@ -401,7 +403,7 @@ class TestPdmEnvironment:
         env.install()
 
         mock_run.assert_called_once_with(
-            ["pdm", "install"],
+            ["pdm", "sync"],
             cwd=temp_env_dir,
             capture_output=True,
             text=True,
@@ -423,6 +425,7 @@ class TestPdmEnvironment:
             cwd=temp_env_dir,
             capture_output=True,
             text=True,
+            check=True,
         )
         assert result.stdout == "pdm output"
 

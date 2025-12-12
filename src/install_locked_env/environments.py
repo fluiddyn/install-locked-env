@@ -1,6 +1,7 @@
 """Environment management classes."""
 
 import subprocess
+import shlex
 import shutil
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -20,6 +21,8 @@ class Environment(ABC):
     tool_name: Optional[str] = None
     _tool_install_url: Optional[str] = None
     _venv_dir: Optional[str] = None
+    _install_cmd: Optional[str | list] = None
+    _list_packages_cmd: Optional[str] = None
 
     def __init__(self, env_dir: Path, name: Optional[str] = None):
         self._check_tool()
@@ -49,14 +52,25 @@ class Environment(ABC):
     @abstractmethod
     def _detect_name(self) -> str:
         """Detect the environment name from configuration."""
-        pass
 
-    @abstractmethod
+    def _run_in_dir(self, cmd, capture_output=True, check=True, **kwargs):
+        """run a subprocess in env_dir"""
+
+        if isinstance(cmd, str):
+            cmd = shlex.split(cmd)
+        return subprocess.run(
+            cmd,
+            cwd=self.env_dir,
+            capture_output=capture_output,
+            text=True,
+            check=check,
+            **kwargs,
+        )
+
     def install(self) -> None:
         """Install the environment."""
-        pass
+        self._run_in_dir(self._install_cmd, capture_output=True)
 
-    @abstractmethod
     def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
         """Run a command in the environment.
 
@@ -67,7 +81,7 @@ class Environment(ABC):
         Returns:
             CompletedProcess object
         """
-        pass
+        return self._run_in_dir([self.tool_name, "run"] + command, **kwargs)
 
     def register_jupyter_kernel(self) -> bool:
         """Register the environment as a Jupyter kernel if ipykernel is present.
@@ -97,10 +111,13 @@ class Environment(ABC):
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    @abstractmethod
     def _has_ipykernel(self) -> bool:
         """Check if ipykernel is installed in the environment."""
-        pass
+        try:
+            result = self._run_in_dir(self._list_packages_cmd)
+            return "ipykernel" in result.stdout
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
 
 
 class PixiEnvironment(Environment):
@@ -116,6 +133,8 @@ class PixiEnvironment(Environment):
 
     tool_name = "pixi"
     _tool_install_url = "https://pixi.sh"
+    _install_cmd = "pixi install"
+    _list_packages_cmd = "pixi list"
 
     def _detect_name(self) -> str:
         """Detect environment name from pixi.toml."""
@@ -124,64 +143,13 @@ class PixiEnvironment(Environment):
             config = tomllib.load(file)
         return config.get("project", {}).get("name", self.env_dir.name)
 
-    def install(self) -> None:
-        """Install the pixi environment.
-
-        Raises:
-            subprocess.CalledProcessError: If installation fails
-        """
-        subprocess.run(
-            ["pixi", "install"],
-            cwd=self.env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-    def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
-        """Run a command in the pixi environment.
-
-        Args:
-            command: Command to run as a list of strings
-            **kwargs: Additional arguments to pass to subprocess.run
-
-        Returns:
-            CompletedProcess object
-        """
-        # Default kwargs
-        default_kwargs = {
-            "cwd": self.env_dir,
-            "capture_output": True,
-            "text": True,
-        }
-        default_kwargs.update(kwargs)
-
-        return subprocess.run(
-            ["pixi", "run"] + command,
-            **default_kwargs,
-        )
-
-    def _has_ipykernel(self) -> bool:
-        """Check if ipykernel is installed in the pixi environment."""
-        try:
-            result = self.run_in_env(["pixi", "list"], check=True)
-            return "ipykernel" in result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False
-
     def list_packages(self) -> list[str]:
         """List installed packages in the environment.
 
         Returns:
             List of package names
         """
-        result = subprocess.run(
-            ["pixi", "list"],
-            cwd=self.env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        result = self._run_in_dir("pixi list")
         # Parse package names from output
         packages = []
         for line in result.stdout.splitlines():
@@ -208,6 +176,7 @@ class UvPylockEnvironment(Environment):
     tool_name = "uv"
     _tool_install_url = "https://github.com/astral-sh/uv"
     _venv_dir = ".venv"
+    _list_packages_cmd = "uv pip list"
 
     def _detect_name(self) -> str:
         """Detect environment name from pylock.toml."""
@@ -225,58 +194,25 @@ class UvPylockEnvironment(Environment):
         Raises:
             subprocess.CalledProcessError: If installation fails
         """
-        # Create venv if it doesn't exist
         if not self.venv_path.exists():
-            subprocess.run(
-                ["uv", "venv"],
-                cwd=self.env_dir,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
+            self._run_in_dir("uv venv")
 
-        # Sync dependencies from pylock.toml
-        subprocess.run(
-            ["uv", "pip", "sync", "pylock.toml"],
-            cwd=self.env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        self._run_in_dir(["uv", "pip", "sync", "pylock.toml"])
 
-    def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
-        """Run a command in the uv environment.
 
-        Args:
-            command: Command to run as a list of strings
-            **kwargs: Additional arguments to pass to subprocess.run
-
-        Returns:
-            CompletedProcess object
-        """
-        default_kwargs = {
-            "cwd": self.env_dir,
-            "capture_output": True,
-            "text": True,
-        }
-        default_kwargs.update(kwargs)
-
-        # Use uv run to execute in the environment
-        return subprocess.run(
-            ["uv", "run"] + command,
-            **default_kwargs,
-        )
-
-    def _has_ipykernel(self) -> bool:
-        """Check if ipykernel is installed in the uv environment."""
+class PyProjectEnvironment(Environment):
+    def _detect_name(self) -> str:
+        """Detect environment name from pyproject.toml."""
+        pyproject_toml = self.env_dir / "pyproject.toml"
         try:
-            result = self.run_in_env(["python", "-m", "pip", "list"], check=True)
-            return "ipykernel" in result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False
+            with open(pyproject_toml, "rb") as file:
+                config = tomllib.load(file)
+            return config.get("project", {}).get("name", self.env_dir.name)
+        except FileNotFoundError:
+            return self.env_dir.name
 
 
-class UvEnvironment(Environment):
+class UvEnvironment(PyProjectEnvironment):
     """UV environment management using uv.lock.
 
     Args:
@@ -290,65 +226,11 @@ class UvEnvironment(Environment):
     tool_name = "uv"
     _tool_install_url = "https://github.com/astral-sh/uv"
     _venv_dir = ".venv"
-
-    def _detect_name(self) -> str:
-        """Detect environment name from pyproject.toml."""
-        pyproject_toml = self.env_dir / "pyproject.toml"
-        try:
-            with open(pyproject_toml, "rb") as file:
-                config = tomllib.load(file)
-            return config.get("project", {}).get("name", self.env_dir.name)
-        except FileNotFoundError:
-            return self.env_dir.name
-
-    def install(self) -> None:
-        """Install the uv environment from uv.lock.
-
-        Raises:
-            subprocess.CalledProcessError: If installation fails
-        """
-        # uv sync will create venv and install dependencies
-        subprocess.run(
-            ["uv", "sync"],
-            cwd=self.env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-    def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
-        """Run a command in the uv environment.
-
-        Args:
-            command: Command to run as a list of strings
-            **kwargs: Additional arguments to pass to subprocess.run
-
-        Returns:
-            CompletedProcess object
-        """
-        default_kwargs = {
-            "cwd": self.env_dir,
-            "capture_output": True,
-            "text": True,
-        }
-        default_kwargs.update(kwargs)
-
-        # Use uv run to execute in the environment
-        return subprocess.run(
-            ["uv", "run"] + command,
-            **default_kwargs,
-        )
-
-    def _has_ipykernel(self) -> bool:
-        """Check if ipykernel is installed in the uv environment."""
-        try:
-            result = self.run_in_env(["python", "-m", "pip", "list"], check=True)
-            return "ipykernel" in result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False
+    _install_cmd = "uv sync"
+    _list_packages_cmd = "uv list"
 
 
-class PdmEnvironment(Environment):
+class PdmEnvironment(PyProjectEnvironment):
     """PDM environment management using pdm.lock.
 
     Args:
@@ -361,67 +243,8 @@ class PdmEnvironment(Environment):
 
     tool_name = "pdm"
     _tool_install_url = "https://pdm-project.org"
-
-    def _detect_name(self) -> str:
-        """Detect environment name from pyproject.toml."""
-        pyproject_toml = self.env_dir / "pyproject.toml"
-        try:
-            with open(pyproject_toml, "rb") as file:
-                config = tomllib.load(file)
-            return config.get("project", {}).get("name", self.env_dir.name)
-        except FileNotFoundError:
-            return self.env_dir.name
-
-    def install(self) -> None:
-        """Install the pdm environment from pdm.lock.
-
-        Raises:
-            subprocess.CalledProcessError: If installation fails
-        """
-        subprocess.run(
-            ["pdm", "install"],
-            cwd=self.env_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-    def run_in_env(self, command: list[str], **kwargs) -> subprocess.CompletedProcess:
-        """Run a command in the pdm environment.
-
-        Args:
-            command: Command to run as a list of strings
-            **kwargs: Additional arguments to pass to subprocess.run
-
-        Returns:
-            CompletedProcess object
-        """
-        default_kwargs = {
-            "cwd": self.env_dir,
-            "capture_output": True,
-            "text": True,
-        }
-        default_kwargs.update(kwargs)
-
-        # Use pdm run to execute in the environment
-        return subprocess.run(
-            ["pdm", "run"] + command,
-            **default_kwargs,
-        )
-
-    def _has_ipykernel(self) -> bool:
-        """Check if ipykernel is installed in the pdm environment."""
-        try:
-            result = subprocess.run(
-                ["pdm", "list"],
-                cwd=self.env_dir,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            return "ipykernel" in result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False
+    _install_cmd = "pdm sync"
+    _list_packages_cmd = "pdm list"
 
 
 supported_tools = {
