@@ -9,9 +9,9 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from .parsers import parse_url, UrlInfo
-from .downloaders import download_files
-from .installers import install_pixi_env, register_jupyter_kernel
+from .parsers import parse_url
+from .downloaders import download_files_choose_tool
+from .environments import create_env_object, supported_tools
 
 app = typer.Typer(
     help="Install locked environments from web sources",
@@ -60,7 +60,8 @@ def main(
             url_info = parse_url(url)
             console.print(f"[green]✓[/green] Detected {url_info.platform} repository")
             console.print(f"  Repository: {url_info.owner}/{url_info.repo}")
-            console.print(f"  Path: {url_info.path}")
+            if url_info.path:
+                console.print(f"  Path: {url_info.path}")
         except ValueError as exc:
             console.print(f"[red]✗[/red] {exc}")
             raise typer.Exit(1)
@@ -69,8 +70,7 @@ def main(
         # Download files
         task = progress.add_task("Downloading files...", total=None)
         try:
-            files = download_files(url_info)
-            env_type = detect_env_type(files)
+            env_type, files = download_files_choose_tool(url_info)
             console.print(f"[green]✓[/green] Downloaded {len(files)} file(s)")
             console.print(f"  Environment type: {env_type}")
         except Exception as exc:
@@ -92,6 +92,7 @@ def main(
         for filename, content in files.items():
             (output_dir / filename).write_text(content)
         console.print(f"[green]✓[/green] Saved files to {output_dir}")
+        console.print("    " + ", ".join(files.keys()))
         progress.remove_task(task)
 
         if no_install:
@@ -99,13 +100,17 @@ def main(
             return
 
         # Install environment
-        if env_type == "pixi":
-            task = progress.add_task("Installing pixi environment...", total=None)
+        if env_type in supported_tools:
+            env = create_env_object(env_type, output_dir)
+            task = progress.add_task(
+                f"  Installing {env.tool_name} environment...", total=None
+            )
+            console.print(
+                f"  log file installation: {env.get_relative_path_log_file()}"
+            )
             try:
-                env_name = install_pixi_env(output_dir)
-                console.print(
-                    f"[green]✓[/green] Installed pixi environment: {env_name}"
-                )
+                env.install()
+                console.print(f"[green]✓[/green] Installed environment: {env.name}")
             except Exception as exc:
                 console.print(f"[red]✗[/red] Installation failed: {exc}")
                 raise typer.Exit(1)
@@ -114,7 +119,7 @@ def main(
             # Register Jupyter kernel if requested
             if register_kernel:
                 task = progress.add_task("Checking for ipykernel...", total=None)
-                if register_jupyter_kernel(output_dir, env_name):
+                if env.register_jupyter_kernel():
                     console.print("[green]✓[/green] Registered Jupyter kernel")
                 else:
                     console.print(
@@ -125,21 +130,8 @@ def main(
             console.print(f"[red]✗[/red] Unsupported environment type: {env_type}")
             raise typer.Exit(1)
 
-    console.print("\n[bold green]Installation complete![/bold green]")
-
-
-def detect_env_type(files: dict[str, str]) -> str:
-    """Detect the type of environment from downloaded files."""
-    if "pixi.toml" in files or "pixi.lock" in files:
-        return "pixi"
-    elif "uv.lock" in files:
-        return "uv"
-    elif "pdm.lock" in files:
-        return "pdm"
-    elif "poetry.lock" in files:
-        return "poetry"
-    else:
-        raise ValueError("Could not detect environment type from downloaded files")
+    console.print("[bold green]Installation complete![/bold green]")
+    console.print(env.get_activate_msg())
 
 
 def cli():
