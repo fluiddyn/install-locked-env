@@ -1,11 +1,8 @@
 """Test suite for environment management classes."""
 
-import subprocess
-import shutil
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open, MagicMock
+from unittest.mock import Mock, patch, mock_open, ANY
 import pytest
-import tomllib
 
 from install_locked_env.environments import (
     Environment,
@@ -181,6 +178,7 @@ class TestPixiEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
 
     @patch("shutil.which")
@@ -199,6 +197,7 @@ class TestPixiEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
         assert result.stdout == "output"
 
@@ -345,6 +344,7 @@ class TestUvEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
 
     @patch("shutil.which")
@@ -363,6 +363,7 @@ class TestUvEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
         assert result.stdout == "test output"
 
@@ -408,6 +409,7 @@ class TestPdmEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
 
     @patch("shutil.which")
@@ -426,6 +428,7 @@ class TestPdmEnvironment:
             capture_output=True,
             text=True,
             check=True,
+            env=ANY,
         )
         assert result.stdout == "pdm output"
 

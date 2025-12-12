@@ -1,5 +1,6 @@
 """Environment management classes."""
 
+import os
 import subprocess
 import shlex
 import shutil
@@ -58,12 +59,20 @@ class Environment(ABC):
 
         if isinstance(cmd, str):
             cmd = shlex.split(cmd)
+
+        env = {
+            key: value
+            for key, value in os.environ.copy().items()
+            if not key.startswith("VIRTUALENV")
+        }
+
         return subprocess.run(
             cmd,
             cwd=self.env_dir,
             capture_output=capture_output,
             text=True,
             check=check,
+            env=env,
             **kwargs,
         )
 
