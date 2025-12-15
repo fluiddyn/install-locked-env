@@ -58,3 +58,4 @@ addopts = ["--pdbcls=IPython.terminal.debugger:TerminalPdb"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+exclude = [".git", ".hg", ".mypy_cache", ".nox", ".ruff_cache", ".venv", "__pypackages__", "_build", ".pixi"]

@@ -4,6 +4,7 @@ syntax: glob
 .venv
 .pdm-build
 .python-version
+.pixi
 
 __pycache__
 .pytest_cache
