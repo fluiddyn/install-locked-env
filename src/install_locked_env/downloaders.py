@@ -5,13 +5,15 @@ from .parsers import UrlInfo
 
 
 tools_files = {
+    "uv-pylock-pdm": ["pyproject.toml", "pylock.toml", "pdm.toml"],
+    "pdm-uv": ["pyproject.toml", "pdm.lock", "pdm.toml"],
     "uv-pylock": ["pyproject.toml", "pylock.toml"],
     "uv-pylock-alone": ["pylock.toml"],
     "pixi": ["pixi.toml", "pixi.lock"],
     "uv": ["pyproject.toml", "uv.lock"],
-    "pdm-uv": ["pyproject.toml", "pdm.lock", "pdm.toml"],
     "pdm": ["pyproject.toml", "pdm.lock"],
-    "poetry": ["pyproject.toml", "poetry.lock"],
+    # not yet supported
+    # "poetry": ["pyproject.toml", "poetry.lock"],
 }
 
 

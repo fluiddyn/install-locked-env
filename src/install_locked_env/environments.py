@@ -292,7 +292,9 @@ class PdmEnvironment(PyProjectEnvironment):
 
 supported_tools = {
     "pixi": PixiEnvironment,
+    "uv-pylock-pdm": UvPylockEnvironment,
     "uv-pylock": UvPylockEnvironment,
+    "uv-pylock-alone": UvEnvironment,
     "uv": UvEnvironment,
     "pdm": PdmEnvironment,
     "pdm-uv": PdmEnvironment,
