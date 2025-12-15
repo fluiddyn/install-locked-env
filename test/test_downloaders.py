@@ -17,6 +17,7 @@ def mock_url_info():
         ref="main",
         path="envs/test",
         raw_url_template="https://example.com/{filename}",
+        base_url="https://example.com",
     )
 
 

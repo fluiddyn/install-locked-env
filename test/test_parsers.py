@@ -3,7 +3,7 @@
 import pytest
 import responses
 
-from install_locked_env.parsers import parse_url, UrlInfo, _split_ref_and_path
+from install_locked_env.parsers import UrlInfo, _split_ref_and_path
 
 
 def test_split_ref_and_path_with_env_pattern():
@@ -53,7 +53,7 @@ def test_parse_github_repo():
         status=200,
     )
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "github"
     assert result.owner == "fluiddyn"
@@ -67,7 +67,7 @@ def test_parse_github_url():
     """Test parsing a GitHub URL."""
     url = "https://github.com/fluiddyn/fluidsim/tree/5266c974e3368d17819f59b0e700b723591e0d1a/pixi-envs/env-fluidsim-mpi"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "github"
     assert result.owner == "fluiddyn"
@@ -81,7 +81,7 @@ def test_parse_github_url_with_branch():
     """Test parsing a GitHub URL with branch name."""
     url = "https://github.com/user/repo/tree/main/subdir"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "github"
     assert result.ref == "main"
@@ -92,7 +92,7 @@ def test_parse_github_url_with_slashed_branch():
     """Test parsing a GitHub URL with slashes in branch name."""
     url = "https://github.com/user/repo/tree/branch/feature-name/envs/dev"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "github"
     assert result.ref == "branch/feature-name"
@@ -111,7 +111,7 @@ def test_parse_heptapod_repo():
         status=200,
     )
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "heptapod"
     assert result.owner == "fluiddyn"
@@ -125,7 +125,7 @@ def test_parse_heptapod_url():
     """Test parsing a Heptapod URL."""
     url = "https://foss.heptapod.net/fluiddyn/fluidsim/-/tree/branch/default/pixi-envs/env-fluidsim"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "heptapod"
     assert result.owner == "fluiddyn"
@@ -139,7 +139,7 @@ def test_parse_heptapod_url_topic_branch():
     """Test parsing a Heptapod URL with topic branch."""
     url = "https://foss.heptapod.net/user/repo/-/tree/topic/default/feature/envs/test"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "heptapod"
     assert result.ref == "topic/default/feature"
@@ -150,7 +150,7 @@ def test_parse_gitlab_url():
     """Test parsing a GitLab URL."""
     url = "https://gitlab.com/user/project/-/tree/main/envs/dev"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "gitlab"
     assert result.owner == "user"
@@ -163,7 +163,7 @@ def test_parse_gitlab_url_with_slashed_branch():
     """Test parsing a GitLab URL with slashes in branch."""
     url = "https://gitlab.com/user/project/-/tree/release/v1.0/pixi-envs/prod"
 
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     assert result.platform == "gitlab"
     assert result.ref == "release/v1.0"
@@ -173,25 +173,25 @@ def test_parse_gitlab_url_with_slashed_branch():
 def test_parse_invalid_github_url():
     """Test that invalid GitHub URLs raise ValueError."""
     with pytest.raises(ValueError, match="Invalid GitHub URL format"):
-        parse_url("https://github.com/user/repo/wrong")
+        UrlInfo.from_url("https://github.com/user/repo/wrong")
 
 
 def test_parse_invalid_gitlab_url():
     """Test that invalid GitLab URLs raise ValueError."""
     with pytest.raises(ValueError, match="Invalid gitlab URL format"):
-        parse_url("https://gitlab.com/user/repo/tree/main")
+        UrlInfo.from_url("https://gitlab.com/user/repo/tree/main")
 
 
 def test_parse_unsupported_platform():
     """Test that unsupported platforms raise ValueError."""
     with pytest.raises(ValueError, match="Unsupported platform"):
-        parse_url("https://bitbucket.org/user/repo")
+        UrlInfo.from_url("https://bitbucket.org/user/repo")
 
 
 def test_github_raw_url_template():
     """Test that GitHub raw URL template is correctly formatted."""
     url = "https://github.com/user/repo/tree/main/path/to/env"
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     raw_url = result.raw_url_template.format(filename="pixi.toml")
     assert (
@@ -203,7 +203,7 @@ def test_github_raw_url_template():
 def test_github_raw_url_template_slashed_ref():
     """Test GitHub raw URL with slashed ref."""
     url = "https://github.com/user/repo/tree/feature/branch-name/envs/test"
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     raw_url = result.raw_url_template.format(filename="pixi.toml")
     assert (
@@ -215,7 +215,7 @@ def test_github_raw_url_template_slashed_ref():
 def test_gitlab_raw_url_template():
     """Test that GitLab raw URL template is correctly formatted."""
     url = "https://gitlab.com/user/repo/-/tree/main/path"
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     raw_url = result.raw_url_template.format(filename="pixi.lock")
     assert raw_url == "https://gitlab.com/user/repo/-/raw/main/path/pixi.lock"
@@ -224,7 +224,7 @@ def test_gitlab_raw_url_template():
 def test_heptapod_raw_url_template_slashed_ref():
     """Test Heptapod raw URL with slashed ref."""
     url = "https://foss.heptapod.net/user/repo/-/tree/branch/default/envs/dev"
-    result = parse_url(url)
+    result = UrlInfo.from_url(url)
 
     raw_url = result.raw_url_template.format(filename="pixi.lock")
     assert (
