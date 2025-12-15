@@ -214,11 +214,19 @@ class TestDownloadViaArchive:
 
     @patch("install_locked_env.downloaders.requests.get")
     @patch("install_locked_env.downloaders.tarfile.open")
-    def test_downloads_gitlab_archive(
-        self, mock_tarfile, mock_requests_get, gitlab_url_info, tmp_path
-    ):
+    def test_downloads_gitlab_archive(self, mock_tarfile, mock_requests_get, tmp_path):
         """Test downloading GitLab repository as tar.gz archive."""
         dest_dir = tmp_path / "test-repo"
+
+        url_info = UrlInfo(
+            platform="gitlab",
+            owner="test-owner",
+            repo="test-repo",
+            ref="feature/new-feature",
+            path="",
+            raw_url_template="",
+            base_url="https://gitlab.com",
+        )
 
         # Mock the HTTP response
         mock_response = Mock()
@@ -242,42 +250,15 @@ class TestDownloadViaArchive:
         ):
             with patch("os.listdir", return_value=["test-repo-main"]):
                 with patch("shutil.move"):
-                    download_via_archive(gitlab_url_info, dest_dir)
+                    download_via_archive(url_info, dest_dir)
 
         # Verify the correct URL was called
         called_url = mock_requests_get.call_args[0][0]
         assert "gitlab.com" in called_url
-        assert "/-/archive/main/" in called_url
+        assert "/-/archive/feature/new-feature/" in called_url
         assert ".tar.gz" in called_url
 
-    @patch("install_locked_env.downloaders.requests.get")
-    def test_handles_ref_with_slashes_gitlab(self, mock_requests_get, tmp_path):
-        """Test that refs with slashes are properly handled for GitLab."""
-        url_info = UrlInfo(
-            platform="gitlab",
-            owner="test-owner",
-            repo="test-repo",
-            ref="feature/new-feature",
-            path="",
-            raw_url_template="",
-            base_url="https://gitlab.com",
-        )
-
-        mock_response = Mock()
-        mock_response.iter_content = Mock(return_value=[b"content"])
-        mock_response.raise_for_status = Mock()
-        mock_requests_get.return_value = mock_response
-
-        with patch("install_locked_env.downloaders.tarfile.open"):
-            with patch("install_locked_env.downloaders.tempfile.mkdtemp"):
-                with patch("os.listdir", return_value=["extracted"]):
-                    with patch("shutil.move"):
-                        with patch("shutil.rmtree"):
-                            dest_dir = os.path.join(tmp_path, "test")
-                            download_via_archive(url_info, dest_dir)
-
         # Verify slashes are replaced with dashes
-        called_url = mock_requests_get.call_args[0][0]
         assert "feature-new-feature" in called_url
 
 

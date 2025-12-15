@@ -189,15 +189,20 @@ def download_via_clone(url_info: UrlInfo, dest_dir: Path):
     else:
         vcs = "git"
 
-    clone_url = f"{url_info.base_url}/{url_info.owner}/{url_info.repo}.git"
-
+    clone_url = f"{url_info.base_url}/{url_info.owner}/{url_info.repo}"
     if vcs == "git":
+        clone_url += ".git"
         clone_cmd = ["git", "clone", "--depth", "1", "--branch", url_info.ref]
         clone_cmd.extend([clone_url, str(dest_dir)])
     elif vcs == "hg":
         clone_cmd = ["hg", "clone"]
         if url_info.ref:
-            clone_cmd.extend(["--rev", url_info.ref])
+            if "/" in url_info.ref:
+                # branch/default or topic/default/topic-name
+                ref = url_info.ref.rsplit("/", maxsplit=1)[1]
+            else:
+                ref = url_info.ref
+            clone_cmd.extend(["--rev", ref])
         clone_cmd.extend([clone_url, str(dest_dir)])
     else:
         raise ValueError(f"Unsupported VCS type: {vcs}")
