@@ -10,7 +10,10 @@ from install_locked_env.environments import (
     UvPylockEnvironment,
     UvEnvironment,
     PdmEnvironment,
+    supported_tools,
 )
+
+from install_locked_env.downloaders import tools_files
 
 
 # Fixtures
@@ -53,6 +56,11 @@ def assert_called_once_with(mock_run, cmd, cwd, capture_output=True):
         stdout=ANY,
         stderr=ANY,
     )
+
+
+def test_supported_tools():
+    """Tests coherence with downloaders.tools_files"""
+    assert set(supported_tools.keys()) == set(tools_files.keys())
 
 
 # Base Environment Tests
