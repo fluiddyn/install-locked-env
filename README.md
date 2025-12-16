@@ -43,12 +43,22 @@ different tools (UV, PDM, Pixi, ...) are supported.
 ```sh
 install-locked-env [OPTIONS] URL
 
-Options:
-  -o, --output PATH          Output directory (default: auto-generated from URL)
-  --no-install               Download files only, don't install environment
-  --register-kernel          Register Jupyter kernel if ipykernel is present (default: True)
-  --no-register-kernel       Skip Jupyter kernel registration
-  --help                     Show this message and exit
+╭─ Options ────────────────────────────────────────────────────────────────────────────╮
+│ --output              -o      PATH  Output directory (default: auto-generated)       │
+│ --no-install                        Download files only, don't install               │
+│ --no-register-kernel                Don't register Jupyter kernel if ipykernel is    │
+│                                     present                                          │
+│ --version                                                                            │
+│ --minimal                           Only download the files necessary to create the  │
+│                                     environment                                      │
+│ --clone                             Clone the repo (only for repository url)         │
+│ --download-method     -d      TEXT  Download method (default: auto): can be          │
+│                                     'archive', 'file-per-file' or 'clone'            │
+│ --install-completion                Install completion for the current shell.        │
+│ --show-completion                   Show completion for the current shell, to copy   │
+│                                     it or customize the installation.                │
+│ --help                -h            Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ### Examples

@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.3.0 (2025-12-16)
+
+[!8](https://foss.heptapod.net/fluiddyn/install-locked-env/-/merge_requests/8)
+
+- Download by default all files in the environment directory
+- Add options `--minimal`, `--clone` and `download-method`.
+
 ## 0.2.0 (2025-12-12)
 
 - Support pylock.toml, pdm.lock and uv.lock
