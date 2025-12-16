@@ -1,6 +1,5 @@
 import pytest
 
-
 from install_locked_env.downloaders import download_via_clone
 
 from .util import get_url_info_env

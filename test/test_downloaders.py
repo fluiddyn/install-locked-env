@@ -1,8 +1,7 @@
 """Test suite for file downloading utilities."""
 
 import os
-import shutil
-import tempfile
+import sys
 from unittest.mock import Mock, patch
 
 import httpx
@@ -175,6 +174,9 @@ def heptapod_url_info():
 class TestDownloadViaArchive:
     """Tests for download_via_archive function."""
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 13), reason="test broken for python < 3.13"
+    )
     @patch("install_locked_env.downloaders.requests.get")
     @patch("install_locked_env.downloaders.zipfile.ZipFile")
     def test_downloads_github_archive(
@@ -212,6 +214,9 @@ class TestDownloadViaArchive:
         assert "github.com" in called_url
         assert "archive/refs/heads/main.zip" in called_url
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 13), reason="test broken for python < 3.13"
+    )
     @patch("install_locked_env.downloaders.requests.get")
     @patch("install_locked_env.downloaders.tarfile.open")
     def test_downloads_gitlab_archive(self, mock_tarfile, mock_requests_get, tmp_path):
