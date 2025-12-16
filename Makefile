@@ -11,3 +11,7 @@ format:
 .PHONY: test
 test:
 	pdm run pytest test -v
+
+.PHONY: test-all
+test-all:
+	pdm run pytest test -v --run-slow

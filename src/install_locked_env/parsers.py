@@ -1,8 +1,9 @@
 """URL parsing utilities."""
 
+import re
 from dataclasses import dataclass
 from urllib.parse import urlparse, quote_plus
-import re
+from typing import Self
 
 import requests
 
@@ -17,6 +18,12 @@ class UrlInfo:
     ref: str  # branch name or commit hash
     path: str  # path within the repository
     raw_url_template: str  # template for raw file URLs
+    base_url: str  # Base URL for GitLab instances (e.g., 'https://gitlab.com')
+
+    @classmethod
+    def from_url(cls, url: str) -> Self:
+        """Create a UrlInfo from an url"""
+        return parse_url(url)
 
 
 def _get_default_branch_github(owner: str, repo: str) -> str:
@@ -162,6 +169,7 @@ def _parse_github_url(url: str, parsed) -> UrlInfo:
         ref=ref,
         path=repo_path,
         raw_url_template=f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{repo_path}/{{filename}}",
+        base_url="https://github.com",
     )
 
 
@@ -221,4 +229,5 @@ def _parse_gitlab_url(url: str, parsed) -> UrlInfo:
         ref=ref,
         path=repo_path,
         raw_url_template=f"{base_url}/{owner}/{repo}/-/raw/{ref}/{repo_path}/{{filename}}",
+        base_url=base_url,
     )
