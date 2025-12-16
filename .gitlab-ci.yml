@@ -66,28 +66,31 @@ lint-with-ruff:
   script:
     - pdm use $PYTHON_VERSION
     - pdm sync -G test
-    - pdm run pytest test -v
+    - pdm run pytest test -v $RUN_SLOW
 
 test-py3.11:
   extends: .test
   variables:
     PYTHON_VERSION: 3.11
+    RUN_SLOW:
 
 test-py3.12:
   extends: .test
   variables:
     PYTHON_VERSION: 3.12
+    RUN_SLOW:
 
 test-py3.13:
   extends: .test
   variables:
     PYTHON_VERSION: 3.13
+    RUN_SLOW:
 
 test-py3.14:
   extends: .test
   variables:
     PYTHON_VERSION: 3.14
-
+    RUN_SLOW: --run-slow
 
 build:
   stage: validate
