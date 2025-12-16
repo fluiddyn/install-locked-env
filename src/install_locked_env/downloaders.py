@@ -59,12 +59,21 @@ def download_files_choose_tool(url_info: UrlInfo) -> tuple[str, dict[str, str]]:
                         continue
 
             if all(file_name in files for file_name in file_names):
+                files = {name: files[name] for name in file_names}
                 return tool, files
 
         for_error = ", ".join("/".join(names) for names in tools_files.values())
         raise ValueError(
             f"No supported lock files found at {url_info.path}. Looked for: {for_error}"
         )
+
+
+def detect_env_type_from_dir(path_dir: Path) -> str:
+    """Detect env type from a directory"""
+    names = set(path.name for path in path_dir.glob("*"))
+    for tool, file_names in tools_files.items():
+        if all(file_name in names for file_name in file_names):
+            return tool
 
 
 def download_via_archive(url_info: UrlInfo, dest_dir: Path) -> None:
@@ -92,8 +101,6 @@ def download_via_archive(url_info: UrlInfo, dest_dir: Path) -> None:
     else:
         raise ValueError(f"Unsupported platform: {url_info.platform}")
 
-    print(f"Downloading archive: {archive_url}")
-
     # Download archive to temporary file
     response = requests.get(archive_url, stream=True, timeout=60)
     response.raise_for_status()
@@ -107,7 +114,6 @@ def download_via_archive(url_info: UrlInfo, dest_dir: Path) -> None:
 
     try:
         # Extract archive
-        print("Extracting archive...")
         temp_extract_dir = Path(tempfile.mkdtemp())
 
         if archive_format == "zip":
@@ -341,8 +347,7 @@ def download_repo_files(
         Path to the downloaded directory
     """
     if dest_dir.exists():
-        print(f"Error: {dest_dir} already exists.", file=sys.stderr)
-        sys.exit(1)
+        raise FileExistsError(f"Error: {dest_dir} already exists.")
 
     # If no path specified, download archive for efficiency
     if method is None or method == "auto":
@@ -368,6 +373,4 @@ def download_repo_files(
         raise ValueError(
             'method has to be in ["auto", "clone", "archive", "file-per-file"]'
         )
-
-    print(f"\n✓ Successfully downloaded to: {dest_dir.absolute()}")
     return dest_dir

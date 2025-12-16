@@ -371,7 +371,7 @@ class TestDownloadRepoFiles:
         dest_dir = tmp_path / "test-repo"
         os.makedirs(dest_dir)
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(FileExistsError):
             download_repo_files(github_url_info, dest_dir)
 
     @patch("install_locked_env.downloaders.download_via_archive")
