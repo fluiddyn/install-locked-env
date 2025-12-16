@@ -42,10 +42,10 @@ def main(
     no_install: bool = typer.Option(
         False, "--no-install", help="Download files only, don't install"
     ),
-    register_kernel: bool = typer.Option(
-        True,
-        "--register-kernel/--no-register-kernel",
-        help="Register Jupyter kernel if ipykernel is present",
+    no_register_kernel: bool = typer.Option(
+        False,
+        "--no-register-kernel",
+        help="Don't register Jupyter kernel if ipykernel is present",
     ),
     version: Annotated[
         Optional[bool],
@@ -173,7 +173,7 @@ def main(
         progress.remove_task(task)
 
         # Register Jupyter kernel if requested
-        if register_kernel:
+        if not no_register_kernel:
             task = progress.add_task("Checking for ipykernel...", total=None)
             if env.register_jupyter_kernel():
                 console.print("[green]✓[/green] Registered Jupyter kernel")
