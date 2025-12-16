@@ -26,7 +26,7 @@ classifiers = [
 ]
 
 [project.scripts]
-install-locked-env = "install_locked_env:cli"
+install-locked-env = "install_locked_env:app"
 
 [project.urls]
 Repository = "https://foss.heptapod.net/fluiddyn/install-locked-env"

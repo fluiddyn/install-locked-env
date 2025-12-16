@@ -1,4 +1,6 @@
-from install_locked_env.__main__ import cli
+from install_locked_env.__main__ import app
+
+__all__ = ["app"]
 
 
 def __getattr__(name: str):

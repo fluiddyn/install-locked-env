@@ -99,45 +99,38 @@ def main(
             console.print("[yellow]Skipping installation (--no-install)[/yellow]")
             return
 
-        # Install environment
-        if env_type in supported_tools:
-            env = create_env_object(env_type, output_dir)
-            task = progress.add_task(
-                f"  Installing {env.tool_name} environment...", total=None
-            )
-            console.print(
-                f"  log file installation: {env.get_relative_path_log_file()}"
-            )
-            try:
-                env.install()
-                console.print(f"[green]✓[/green] Installed environment: {env.name}")
-            except Exception as exc:
-                console.print(f"[red]✗[/red] Installation failed: {exc}")
-                raise typer.Exit(1)
-            progress.remove_task(task)
-
-            # Register Jupyter kernel if requested
-            if register_kernel:
-                task = progress.add_task("Checking for ipykernel...", total=None)
-                if env.register_jupyter_kernel():
-                    console.print("[green]✓[/green] Registered Jupyter kernel")
-                else:
-                    console.print(
-                        "[yellow]⚠[/yellow] ipykernel not found, skipping kernel registration"
-                    )
-                progress.remove_task(task)
-        else:
+        if env_type not in supported_tools:
             console.print(f"[red]✗[/red] Unsupported environment type: {env_type}")
             raise typer.Exit(1)
+
+        # Install environment
+        env = create_env_object(env_type, output_dir)
+        task = progress.add_task(
+            f"  Installing {env.tool_name} environment...", total=None
+        )
+        console.print(f"  log file installation: {env.get_relative_path_log_file()}")
+        try:
+            env.install()
+            console.print(f"[green]✓[/green] Installed environment: {env.name}")
+        except Exception as exc:
+            console.print(f"[red]✗[/red] Installation failed: {exc}")
+            raise typer.Exit(1)
+        progress.remove_task(task)
+
+        # Register Jupyter kernel if requested
+        if register_kernel:
+            task = progress.add_task("Checking for ipykernel...", total=None)
+            if env.register_jupyter_kernel():
+                console.print("[green]✓[/green] Registered Jupyter kernel")
+            else:
+                console.print(
+                    "[yellow]⚠[/yellow] ipykernel not found, skipping kernel registration"
+                )
+            progress.remove_task(task)
 
     console.print("[bold green]Installation complete![/bold green]")
     console.print(env.get_activate_msg())
 
 
-def cli():
-    """"""
-    app()
-
-
 if __name__ == "__main__":
-    cli()
+    app()

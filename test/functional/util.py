@@ -1,9 +1,8 @@
 from install_locked_env.parsers import UrlInfo
 
 
-def get_url_info_env(platform: str, kind: str) -> UrlInfo:
-    """Create a UrlInfo corresponding to a venv"""
-
+def get_url_env(platform: str, kind: str) -> str:
+    """Get url corresponding to a venv"""
     if platform == "github":
         netloc = "github.com"
     elif platform == "heptapod":
@@ -20,4 +19,10 @@ def get_url_info_env(platform: str, kind: str) -> UrlInfo:
             url += "/-"
         url += f"/tree/{ref}/{path}"
 
-    return UrlInfo.from_url(url)
+    return url
+
+
+def get_url_info_env(platform: str, kind: str) -> UrlInfo:
+    """Create a UrlInfo corresponding to a venv"""
+
+    return UrlInfo.from_url(get_url_env(platform, kind))
