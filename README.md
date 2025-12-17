@@ -18,7 +18,17 @@ uvx install-locked-env <url>
 ```
 
 Of course, `install-locked-env` can also be installed with `uv tool`, `pipx` or even
-`pip`.
+`pip`. For example, to install globally with UV, run:
+
+```sh
+uv tool install install-locked-env
+```
+
+Alternatively, the conda-forge package can be installed with:
+
+```sh
+pixi global install install-locked-env
+```
 
 ## Usage
 
