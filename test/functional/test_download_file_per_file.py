@@ -1,5 +1,5 @@
 import pytest
-
+import requests
 
 from install_locked_env.downloaders import download_file_per_file
 
@@ -11,7 +11,15 @@ from .util import get_url_info_env
 def test_download_file_per_file(tmp_path, platform):
     """test download file per file"""
     url_info = get_url_info_env(platform, "pdm-pylock")
-    download_file_per_file(url_info, tmp_path)
+
+    try:
+        download_file_per_file(url_info, tmp_path)
+    except requests.exceptions.HTTPError as exc:
+        status_code = exc.response.status_code
+        if status_code == 403:
+            # Forbidden (typically rate limit exceeded GitHub API)
+            pytest.skip("Skipping because of 403 HTTP error")
+
     paths = set(path.name for path in tmp_path.glob("*"))
     assert "pdm.toml" in paths
     assert "pylock.toml" in paths

@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+import requests
 from typer.testing import CliRunner
 
 from install_locked_env import app
@@ -40,6 +41,15 @@ def test_app_simple(tmp_path, platform, minimal):
         return_value=mock_env,
     ):
         result = runner.invoke(app, options)
+
+    exc = result.exception
+    if (
+        exc is not None
+        and isinstance(exc, requests.exceptions.HTTPError)
+        and exc.response.status_code == 403
+    ):
+        # Forbidden (typically rate limit exceeded GitHub API)
+        pytest.skip("Skipping because of 403 HTTP error")
 
     assert result.exit_code == 0
 
