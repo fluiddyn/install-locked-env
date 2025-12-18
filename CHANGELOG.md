@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.3.1 (2025-12-18)
+
+- Windows, macOS and Linux support (CI with GitHub Actions)
+
 ## 0.3.0 (2025-12-16)
 
 [!8](https://foss.heptapod.net/fluiddyn/install-locked-env/-/merge_requests/8)

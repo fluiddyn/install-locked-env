@@ -1,6 +1,6 @@
 [project]
 name = "install-locked-env"
-version = "0.3.0"
+version = "0.3.1"
 description = "Helper to install (web) locked environments"
 authors = [
     {name = "pierre.augier", email = "pierre.augier@univ-grenoble-alpes.fr"},
