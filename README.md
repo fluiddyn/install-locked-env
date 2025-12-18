@@ -4,6 +4,7 @@
 ![Supported Python versions](https://img.shields.io/pypi/pyversions/install-locked-env.svg)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Heptapod CI](https://foss.heptapod.net/fluiddyn/install-locked-env/badges/branch/default/pipeline.svg)](https://foss.heptapod.net/fluiddyn/install-locked-env/-/pipelines)
+[![Github Actions](https://github.com/fluiddyn/install-locked-env/actions/workflows/ci.yml/badge.svg?branch=branch/default)](https://github.com/fluiddyn/install-locked-env/actions/workflows/ci.yml)
 
 A minimalist CLI tool easing the local installation of "locked environments" described in
 lock files available in repositories on the web.

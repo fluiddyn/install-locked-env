@@ -1,0 +1,29 @@
+name: CI Test
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
+      - if: runner.os != 'Windows'
+        name: Install Mercurial with UV
+        run: |
+          uv tool install mercurial
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies with PDM
+        run: pdm sync --clean
+      - name: Run tests
+        run: pdm run pytest test -v --run-slow --cov=install_locked_env

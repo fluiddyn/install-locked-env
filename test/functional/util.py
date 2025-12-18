@@ -1,3 +1,6 @@
+import pytest
+import requests
+
 from install_locked_env.parsers import UrlInfo
 
 
@@ -25,4 +28,11 @@ def get_url_env(platform: str, kind: str) -> str:
 def get_url_info_env(platform: str, kind: str) -> UrlInfo:
     """Create a UrlInfo corresponding to a venv"""
 
-    return UrlInfo.from_url(get_url_env(platform, kind))
+    try:
+        return UrlInfo.from_url(get_url_env(platform, kind))
+    except requests.exceptions.HTTPError as exc:
+        status_code = exc.response.status_code
+        if status_code == 403:
+            # Forbidden (typically rate limit exceeded GitHub API)
+            pytest.skip("Skipping because of 403 HTTP error")
+        raise
