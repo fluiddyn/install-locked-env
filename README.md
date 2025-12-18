@@ -40,6 +40,22 @@ Install a locked environment from a web source:
 install-locked-env https://github.com/fluiddyn/fluidsim/tree/branch/default/pixi-envs/env-fluidsim
 ```
 
+If Pixi is installed, this should give something like this
+
+```
+✓ Detected github repository
+  Repository: fluiddyn/fluidsim
+  Path: pixi-envs/env-fluidsim
+✓ Saved files to /home/myusername/env-fluidsim
+  Environment type: pixi
+  log file installation: env-fluidsim/log_install.txt
+✓ Installed environment: env-fluidsim
+✓ Registered Jupyter kernel
+
+Installation complete!
+Activate with: pixi shell --manifest-path env-fluidsim
+```
+
 Different lock file formats (pylock.toml, uv.lock, pdm.lock, pixi.lock, ...) produced by
 different tools (UV, PDM, Pixi, ...) are supported.
 
